@@ -6,34 +6,38 @@
 /*   By: mkantzer <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/11/17 14:59:18 by mkantzer          #+#    #+#             */
-/*   Updated: 2016/11/18 17:55:32 by mkantzer         ###   ########.fr       */
+/*   Updated: 2016/11/21 15:42:58 by agiulian         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "fillit.h"
 
-int		ft_check(char *file)
+char	**ft_check(char *file)
 {
 	int		fd;
+	int		i;
 	int		ret;
+	char	**tab;
 	char	buf[BUF_SIZE + 1];
 
+	i = 0;
+	tab = (char**)ft_memalloc(27);
 	fd = open(file, O_RDONLY);
 	if (fd < 0)
-		return (0);
+		return (NULL);
 	while ((ret = read(fd, buf, BUF_SIZE)) > 0)
 	{
-		ft_putstr("New Tetro\n");
 		buf[ret] = '\0';
-		if (!ft_check_size(buf))
-			return (0);
-		if (!ft_check_grid(buf))
-			return (0);
-		if (!ft_check_tetro(buf))
-			return (0);
+		if ((!ft_check_size(buf)) || (!ft_check_grid(buf)) || \
+				(!ft_check_sharp(buf)))
+			return (NULL);
+		if (!ft_check_tetri(buf))
+			return (NULL);
+		tab = store_tetris(i, buf, tab);
+		i++;
 	}
 	close(fd);
-	return (1);
+	return (tab);
 }
 
 int		ft_check_size(char *buf)
@@ -88,7 +92,7 @@ int		ft_check_grid(char *buf)
 		return (0);
 }
 
-int		ft_check_tetro(char *buf)
+int		ft_check_sharp(char *buf)
 {
 	int	i;
 	int	sharp;
@@ -104,4 +108,32 @@ int		ft_check_tetro(char *buf)
 	if (sharp != 4)
 		return (0);
 	return (1);
+}
+
+int		ft_check_tetri(char *buf)
+{
+	int i;
+	int countc;
+
+	i = 0;
+	countc = 0;
+	while (buf[i])
+	{
+		if (buf[i] == '#')
+		{
+			if (buf[i + 1] == '#' && buf[i + 1])
+				countc++;
+			if (buf[i - 1] == '#' && buf[i - 1])
+				countc++;
+			if (buf[i + 5] == '#' && buf[i + 5])
+				countc++;
+			if (buf[i - 5] == '#' && buf[i - 5])
+				countc++;
+		}
+		i++;
+	}
+	if (countc >= 6)
+		return (1);
+	else
+		return (0);
 }
